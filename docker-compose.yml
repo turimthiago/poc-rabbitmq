@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  api:
+    container_name: 'api'
+    build:
+      context: .
+    ports:
+      - 3000:3000
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    links:
+      - rabbitmq
+    volumes:
+      - .:/app:ro
+    networks:
+      - default_nw
+  rabbitmq:
+    container_name: 'rabbitmq'
+    image: rabbitmq:3.9.7-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 20s
+      retries: 5
+    networks:
+      - default_nw
+networks:
+  default_nw:
+    driver: bridge
